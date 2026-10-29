@@ -51,7 +51,47 @@
 <div id="xy-input-box" style="position: absolute; top: 10px; right: 10px; background: white; padding: 10px; border-radius: 5px; z-index: 1000; box-shadow: 0 0 5px rgba(0,0,0,0.3); font-family: sans-serif;">
     <label style="font-size: 12px; font-weight: bold;">Cari Koordinat (X, Y):</label><br>
     <input type="text" id="xy-coord" placeholder="Contoh: 106.8, -6.2" style="margin-top: 5px; padding: 3px; width: 150px; font-size: 12px;">
-    <button onclick="var input=document.getElementById('xy-coord').value; var c=input.split(','); if(c.length!==2){alert('Format salah! Gunakan format: X, Y');} else { var p=ol.proj.fromLonLat([parseFloat(c[0]), parseFloat(c[1])]); var m=(typeof map!=='undefined')?map:olMap; m.getView().animate({center:p, zoom:22, duration:1500}); }" style="margin-top: 5px; padding: 3px 8px; background: #00529B; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">Cari</button>
+    <button onclick="
+    var input=document.getElementById('xy-coord').value; 
+    var c=input.split(','); 
+    if(c.length!==2){
+        alert('Format salah! Gunakan format: X, Y');
+    } else { 
+        var x=parseFloat(c[0]); 
+        var y=parseFloat(c[1]); 
+        var p=ol.proj.fromLonLat([x, y]); 
+        var m=(typeof map!=='undefined')?map:olMap; 
+        
+        // 1. Hapus marker lama (jika ada) agar tidak menumpuk
+        if(window.xyMarkerLayer){ m.removeLayer(window.xyMarkerLayer); }
+        
+        // 2. Buat layer khusus untuk marker
+        window.xyMarkerLayer = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [new ol.Feature({
+                    geometry: new ol.geom.Point(p)
+                })]
+            }),
+            style: new ol.style.Style({
+                image: new ol.style.Icon({
+                    anchor: [0.5, 1], // Ujung bawah pin menunjuk ke koordinat
+                    src: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    scale: 0.8
+                })
+            })
+        });
+        
+        // 3. Tambahkan marker ke peta
+        m.addLayer(window.xyMarkerLayer);
+        
+        // 4. Geser peta ke lokasi marker
+        m.getView().animate({
+            center: p,
+            zoom: 18, // Angka zoom bisa Anda sesuaikan lagi (misal 20)
+            duration: 1500 
+        }); 
+    }
+" style="margin-top: 5px; padding: 3px 8px; background: #00529B; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">Cari</button>
 </div>
             <div id="popup" class="ol-popup">
                 <a href="#" id="popup-closer" class="ol-popup-closer"></a>
